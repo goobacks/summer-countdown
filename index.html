@@ -202,6 +202,30 @@
       padding: clamp(32px, 6vh, 56px) 24px clamp(40px, 7vh, 64px);
     }
 
+    .snapshot {
+      margin: 0 auto clamp(36px, 6vh, 60px);
+      max-width: min(420px, 82vw);
+      transform: rotate(-2deg);
+      background: var(--cream);
+      padding: 10px 10px 12px;
+      border-radius: 4px;
+      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.45);
+    }
+
+    .snapshot img {
+      display: block;
+      width: 100%;
+      border-radius: 2px;
+    }
+
+    .snapshot figcaption {
+      padding-top: 10px;
+      text-align: center;
+      font-style: italic;
+      font-size: 0.88rem;
+      color: #3a3148;
+    }
+
     .details-inner {
       max-width: 880px;
       margin: 0 auto;
@@ -283,6 +307,11 @@
 </div>
 
 <div class="details">
+  <figure class="snapshot" id="snapshot" hidden>
+    <img src="us.jpg" alt="The two of us mid-celebration, champagne held high"
+         onload="document.getElementById('snapshot').hidden = false">
+    <figcaption>In training for 18 November.</figcaption>
+  </figure>
   <div class="details-inner">
     <div class="detail">
       <h2>The beach</h2>
