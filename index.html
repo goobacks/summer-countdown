@@ -3,15 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#141b33">
   <title>Sleeps to Llandudno</title>
   <meta name="description" content="Counting down to our summer holiday in Llandudno, Cape Town — 18 November.">
   <meta property="og:title" content="Sleeps to Llandudno">
   <meta property="og:description" content="Counting down to our summer holiday in Llandudno, Cape Town — 18 November.">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://summer-countdown.vercel.app/">
+  <meta property="og:image" content="https://summer-countdown.vercel.app/us.jpg">
+  <meta property="og:image:width" content="720">
+  <meta property="og:image:height" content="603">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌅</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;600&display=swap">
   <style>
     :root {
       --sky-top: #141b33;
@@ -41,8 +47,14 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    ::selection {
+      background: rgba(242, 115, 74, 0.55);
+      color: #fff6e8;
+    }
+
     .scene {
       position: relative;
+      min-height: 100vh;
       min-height: 100svh;
       display: flex;
       flex-direction: column;
@@ -64,6 +76,7 @@
       left: 50%;
       top: 78%;
       width: clamp(140px, 24vw, 260px);
+      height: clamp(140px, 24vw, 260px);
       aspect-ratio: 1;
       transform: translate(-50%, -62%);
       border-radius: 50%;
@@ -149,6 +162,8 @@
       flex-wrap: wrap;
     }
 
+    .countdown[hidden] { display: none; }
+
     .unit {
       display: flex;
       flex-direction: column;
@@ -164,6 +179,8 @@
       line-height: 1;
       letter-spacing: -0.02em;
       text-shadow: 0 2px 24px rgba(20, 27, 51, 0.55);
+      min-width: 2ch;
+      text-align: center;
     }
 
     .unit .label {
@@ -194,6 +211,16 @@
 
     .arrived h1 { font-size: clamp(2.4rem, 8vw, 5.5rem); }
 
+    /* Very narrow phones: the row wraps, so drop the colons rather than strand them */
+    @media (max-width: 400px) {
+      .sep { display: none; }
+    }
+
+    /* Short landscape viewports push text onto the bright horizon band */
+    @media (max-height: 480px) {
+      .content { background: rgba(20, 27, 51, 0.5); }
+    }
+
     .details {
       position: relative;
       z-index: 2;
@@ -215,6 +242,7 @@
     .snapshot img {
       display: block;
       width: 100%;
+      height: auto;
       border-radius: 2px;
     }
 
@@ -292,7 +320,7 @@
       We land on <strong>18 November</strong>.
     </p>
 
-    <div class="countdown" id="countdown" role="timer" aria-live="polite">
+    <div class="countdown" id="countdown" role="timer">
       <div class="unit"><span class="num" id="d">--</span><span class="label">Days</span></div>
       <span class="sep" aria-hidden="true">:</span>
       <div class="unit"><span class="num" id="h">--</span><span class="label">Hours</span></div>
@@ -302,14 +330,14 @@
       <div class="unit"><span class="num" id="s">--</span><span class="label">Seconds</span></div>
     </div>
 
-    <p class="sleeps" id="sleeps"></p>
+    <p class="sleeps" id="sleeps" aria-live="polite"></p>
   </div>
 </div>
 
 <div class="details">
-  <figure class="snapshot" id="snapshot" hidden>
-    <img src="us.jpg" alt="The two of us mid-celebration, champagne held high"
-         onload="document.getElementById('snapshot').hidden = false">
+  <figure class="snapshot">
+    <img src="us.jpg" width="720" height="603" loading="lazy" decoding="async"
+         alt="The two of us mid-celebration, champagne held high">
     <figcaption>In training for 18 November.</figcaption>
   </figure>
   <div class="details-inner">
@@ -358,6 +386,8 @@
 
   function pad(n) { return n < 10 ? "0" + n : "" + n; }
 
+  var lastSleeps = -1;
+
   function tick() {
     var diff = target - new Date();
 
@@ -382,7 +412,10 @@
     el.s.textContent = pad(secs % 60);
 
     var sleeps = Math.ceil(diff / 86400000);
-    el.sleeps.textContent = "That's " + sleeps + " sleep" + (sleeps === 1 ? "" : "s") + " to go";
+    if (sleeps !== lastSleeps) {
+      lastSleeps = sleeps;
+      el.sleeps.textContent = "That's " + sleeps + " sleep" + (sleeps === 1 ? "" : "s") + " to go";
+    }
   }
 
   var timer = setInterval(tick, 1000);
@@ -392,7 +425,9 @@
   (function () {
     var canvas = document.getElementById("sea");
     var ctx = canvas.getContext("2d");
-    var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var reduceMotion = motionQuery.matches;
+    var running = false;
     var w, hgt, dpr;
 
     function resize() {
@@ -438,13 +473,39 @@
     }
 
     function loop(t) {
+      if (reduceMotion) { running = false; return; }
       draw(t);
-      if (!reduceMotion) requestAnimationFrame(loop);
+      requestAnimationFrame(loop);
     }
 
-    window.addEventListener("resize", function () { resize(); if (reduceMotion) draw(0); });
+    function start() {
+      if (!running) {
+        running = true;
+        requestAnimationFrame(loop);
+      }
+    }
+
+    function onResize() {
+      resize();
+      if (!running) draw(0);
+    }
+
+    if (motionQuery.addEventListener) {
+      motionQuery.addEventListener("change", function (e) {
+        reduceMotion = e.matches;
+        if (reduceMotion) { draw(0); } else { start(); }
+      });
+    }
+
+    // ResizeObserver also catches reflow from font swaps, not just window resizes
+    if (window.ResizeObserver) {
+      new ResizeObserver(onResize).observe(canvas);
+    } else {
+      window.addEventListener("resize", onResize);
+    }
+
     resize();
-    if (reduceMotion) { draw(0); } else { requestAnimationFrame(loop); }
+    if (reduceMotion) { draw(0); } else { start(); }
   })();
 </script>
 </body>
